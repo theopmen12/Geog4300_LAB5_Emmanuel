@@ -36,6 +36,9 @@ library(corrplot)
 library(knitr)
 
 all_vars<-read_csv("data/climpolicy_combined.csv")
+
+dim(all_vars)   
+head(all_vars)  
 ```
 
 The combined dataset, `all_vars`, contains observations for 34 countries in 2000 and 2020. Each row represents a country in a particular year.
@@ -79,7 +82,7 @@ all_vars %>%
 
 **Task 1** _Why might GDP per capita and CO₂ emissions per capita be more useful than total GDP and total emissions when comparing countries?_
 
-{Your response here.}
+{GDP per capita and CO₂ emissions per capita are more useful because countries have different population sizes. A country with a large population may have a higher total GDP and more CO₂ emissions simply because more people live there. By calculating these values per person, we can compare countries more fairly. GDP per capita helps us understand the average economic output per person, while CO₂ emissions per capita show how much carbon dioxide is emitted per person. This makes it easier to compare countries regardless of their population sizes.}
 
 ## 2. Explore the distributions of the variables
 
@@ -156,7 +159,7 @@ data_2020 %>%
 
 **Task 2** _Which variables appear most skewed? Pick one of these and identify some of the countries that are outliers for this variable._
 
-{Your response goes here.}
+{Based on the histograms and Q-Q plots, GDP per capita and CO₂ emissions per capita appear to be the most right-skewed variables. This means most countries have lower or moderate values, while a few countries have much higher values. Electoral democracy is also left-skewed, with most countries having high democracy scores.For GDP per capita, Luxembourg stands out as an outlier, with approximately $105,274 per person in 2020. Switzerland ($86,294), Ireland ($80,928), and Norway ($78,387) also have relatively high GDP per capita compared to most other countries. These high values contribute to the right-skewed distribution.}
 
 ## 3. Calculate correlations for 2020
 
@@ -165,16 +168,37 @@ Correlation coefficients measure the direction and strength of relationships bet
 **Task 3** _Select just the four variables of interest and create a correlation matrix using the appropriate measure of correlation. Print this table once you've created it._
 
 ```{r Task3}
+#select the four variables.
+vars_2020 <- data_2020 %>%
+  select(oecd_climpol_stringent,
+         co2_per_capita,
+         gdp_per_capita,
+         v2x_polyarchy)
 
+# Spearman is suitable here because normality is questionable.the rcorr() calculates both the correlations and their p-values.
+cor_2020 <- rcorr(as.matrix(vars_2020), type = "spearman")
+cor_2020
+
+#Print the matrix of correlation coefficients.
+kable(round(cor_2020$r, 2))
+
+# p-values for interpreting statistical significance.
+kable(round(cor_2020$P, 3))
 ```
 
 **Task 4** _Create a correlation plot from this matrix using `corrplot` and the parameters of your choosing_
 
 ```{r Task4}
-
+corrplot.mixed(cor_2020$r,
+               lower = "square",
+               upper = "circle",
+               tl.pos = "lt",
+               diag = "n")
 ```
 
 **Task 5** Based on your correlation matrix and correlation plot, is climate-policy stringency associated with electoral democracy, GDP per capita, or CO₂ emissions per capita? Describe the direction and strength of each relationship. Do the results support your expectations?
+
+The correlation matrix and plot show that climate-policy stringency has a moderate positive relationship with GDP per capita (r = 0.57) and with electoral democracy (r = 0.50). Both are statistically significant (p < 0.05). Countries with higher GDP per capita and stronger democracy tend to have stricter climate policies. CO₂ emissions per capita have only a weak positive relationship with stringency (r = 0.20), and it is not statistically significant (p = 0.265).The results mostly match what I expected. I thought wealthier, more democratic countries would have stronger climate policies, and they do. I also expected countries with higher CO₂ emissions to have stricter policies, but the results show no strong relationship there.
 
 ## 4. Compare correlations between 2000 and 2020
 
@@ -188,12 +212,20 @@ data_2000 <- all_vars %>%
 **Task 6** _Create a new correlation matrix for 2000 and print it, just as you did for the 2020 data. Then print both matrices so they can be compared side-by-side._
 
 ```{r Task6}
+vars_2000 <- data_2000 %>%
+  select(oecd_climpol_stringent,
+         co2_per_capita,
+         gdp_per_capita,
+         v2x_polyarchy)
+
+cor_2000 <- rcorr(as.matrix(vars_2000), type = "spearman")
+
 
 ```
 
 **Task 7** How did the correlation between climate-policy stringency and electoral democracy change between 2000 and 2020? What about the relationship between policy stringency and CO₂ emissions per capita?
 
-{Your response here}
+{}
 
 ## 5. Examine changes within countries
 
